@@ -10,6 +10,8 @@ ROOT_DIR_NAME = 'toggl_log'
 INVALID_TIME = Time.new(1960, 1, 1, 0, 0, 0)
 
 module GoogleDrive
+  # Worksheet class for google spreadsheet
+  # To add clear_all in the sheet
   class Worksheet
     # clear all contents
     def clear_all
@@ -23,6 +25,8 @@ module GoogleDrive
 end
 
 module TogglV8
+  # Toggl V8 API class
+  # I open this class to add method xxx_with_id methods
   class API
     def my_clients_with_id
       res = nil
@@ -84,15 +88,19 @@ projects = toggl.projects_with_id(workspace_id)
 
 # add client name
 projects.each do |_k, project|
-  project['client'] = clients[project['cid']]['name'] if project['cid'] && clients[project['cid']]
+  if project['cid'] && clients[project['cid']]
+    project['client'] =
+      clients[project['cid']]['name']
+  end
 end
 
-time_entries = toggl.get_time_entries(start_date: DateTime.new(target_date.year,
-                                                               target_date.month,
-                                                               target_date.day, 0, 0, 0),
-                                      end_date: DateTime.new(target_date.year,
-                                                             target_date.month,
-                                                             target_date.day, 23, 59, 59))
+time_entries =
+  toggl.get_time_entries(start_date: DateTime.new(target_date.year,
+                                                  target_date.month,
+                                                  target_date.day, 0, 0, 0),
+                         end_date: DateTime.new(target_date.year,
+                                                target_date.month,
+                                                target_date.day, 23, 59, 59))
 time_entries.each do |entry|
   entry['start_time'] = if entry['start']
                           Time.parse(entry['start'])
@@ -149,7 +157,8 @@ time_entries.each do |entry|
     when 'start', 'stop'
       key = "#{v}_time"
       if entry[key] && entry[key] != INVALID_TIME
-        worksheet[row, i + 1] = entry[key].localtime.strftime('%Y/%m/%d %H:%M:%S')
+        worksheet[row, i + 1] =
+          entry[key].localtime.strftime('%Y/%m/%d %H:%M:%S')
       end
     when 'plan'
       if entry['description'] =~ %r{.*//([0-9]+).*}
