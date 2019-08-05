@@ -72,6 +72,7 @@ end
 load_env
 
 target_date = Date.today
+target_date = Date.parse(ARGV[0]) if ARGV.length == 1
 
 puts "target date:#{target_date.strftime('%Y.%m.%d')}"
 
@@ -81,8 +82,17 @@ workspace_id = toggl.workspaces.first['id']
 clients =  toggl.my_clients_with_id
 projects = toggl.projects_with_id(workspace_id)
 
-time_entries = toggl.get_time_entries(start_date: DateTime.now - 30,
-                                      end_date: DateTime.now + 30)
+# add client name
+projects.each do |_k, project|
+  project['client'] = clients[project['cid']]['name'] if project['cid'] && clients[project['cid']]
+end
+
+time_entries = toggl.get_time_entries(start_date: DateTime.new(target_date.year,
+                                                               target_date.month,
+                                                               target_date.day, 0, 0, 0),
+                                      end_date: DateTime.new(target_date.year,
+                                                             target_date.month,
+                                                             target_date.day, 23, 59, 59))
 time_entries.each do |entry|
   entry['start_time'] = if entry['start']
                           Time.parse(entry['start'])
@@ -97,9 +107,7 @@ time_entries.each do |entry|
                        end
   project = (projects[entry['pid']] if entry['pid'])
   entry['project'] = (project['name'] if project)
-  entry['client'] = if project
-                      clients[project['cid']]['name'] if clients[project['cid']]
-                    end
+  entry['client'] = (project['client'] if project)
 end
 
 time_entries.sort do |l, r|
@@ -125,7 +133,7 @@ worksheet = target_file.worksheets[0]
 # clear worksheet data
 worksheet.clear_all
 
-ids = %w[id description start stop client project]
+ids = %w[id description plan start stop actual diff client project]
 
 row = 1
 ids.each_with_index do |v, i|
@@ -135,7 +143,33 @@ row += 1
 
 time_entries.each do |entry|
   ids.each_with_index do |v, i|
-    worksheet[row, i + 1] = entry[v]
+    case v
+    when 'start', 'stop'
+      key = "#{v}_time"
+      if entry[key] && entry[key] != INVALID_TIME
+        worksheet[row, i + 1] = entry[key].localtime.strftime('%Y/%m/%d %H:%M:%S')
+      end
+    when 'plan'
+      if entry['description'] =~ %r{.*//([0-9]+).*}
+        entry['plan'] = Regexp.last_match[1].to_i
+        worksheet[row, i + 1] = entry['plan']
+      end
+    when 'actual'
+      start_time = entry['start_time']
+      stop_time = entry['stop_time']
+      if start_time && stop_time &&
+         start_time != INVALID_TIME &&
+         stop_time != INVALID_TIME
+        entry['actual'] = ((stop_time - start_time) / 60).to_i
+        worksheet[row, i + 1] = entry['actual']
+      end
+    when 'diff'
+      if entry['plan'] && entry['actual']
+        worksheet[row, i + 1] = entry['actual'] - entry['plan']
+      end
+    else
+      worksheet[row, i + 1] = entry[v]
+    end
   end
   row += 1
 end
