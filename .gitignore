@@ -2,3 +2,6 @@
 /vendor/ruby
 /.env
 /config.json
+GPATH
+GRTAGS
+GTAGS
