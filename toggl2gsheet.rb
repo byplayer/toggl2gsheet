@@ -123,11 +123,13 @@ toggl_log_dir = verify_dir(root, ROOT_DIR_NAME)
 
 year_dir_name = target_date.strftime("%Y_#{ROOT_DIR_NAME}")
 year_dir = verify_dir(toggl_log_dir, year_dir_name)
+year_month_dir_name = target_date.strftime("%Y%m_#{ROOT_DIR_NAME}")
+year_month_dir = verify_dir(year_dir, year_month_dir_name)
 
 target_file_name = target_date.strftime("%Y%m%d_#{ROOT_DIR_NAME}")
-target_file = year_dir.file_by_title(target_file_name)
+target_file = year_month_dir.file_by_title(target_file_name)
 
-target_file ||= year_dir.create_spreadsheet(target_file_name)
+target_file ||= year_month_dir.create_spreadsheet(target_file_name)
 worksheet = target_file.worksheets[0]
 
 # clear worksheet data
