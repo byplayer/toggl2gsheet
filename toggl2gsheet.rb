@@ -6,7 +6,7 @@ require 'togglv8'
 require 'google_drive'
 require 'time'
 
-ENV['TZ'] = 'Asia/Singapre'
+TIME_OFFSET = '+08:00'
 
 ROOT_DIR_NAME = 'toggl_log'
 INVALID_TIME = Time.new(1960, 1, 1, 0, 0, 0)
@@ -160,7 +160,7 @@ time_entries.each do |entry|
       key = "#{v}_time"
       if entry[key] && entry[key] != INVALID_TIME
         worksheet[row, i + 1] =
-          entry[key].localtime.strftime('%Y/%m/%d %H:%M:%S')
+          entry[key].localtime(TIME_OFFSET).strftime('%Y/%m/%d %H:%M:%S')
       end
     when 'plan'
       if entry['description'] =~ %r{.*//([0-9]+).*}
