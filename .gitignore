@@ -2,6 +2,7 @@
 /vendor/ruby
 /.env
 /config.json
+/log
 GPATH
 GRTAGS
 GTAGS
