@@ -4,7 +4,7 @@ if [ -f /etc/profile.d/rvm.sh ] ; then
   . /etc/profile.d/rvm.sh
 fi
 
-LOG=log/toggl2sheet_`date +%Y%m%d`.log
+LOG=log/toggl2sheet.log
 
 echo `date +'%Y.%m.%d %H:%M:%S'` start >> $LOG
 ruby toggl2gsheet.rb >> $LOG
