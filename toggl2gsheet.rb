@@ -6,6 +6,8 @@ require 'togglv8'
 require 'google_drive'
 require 'time'
 
+ENV['TZ'] = 'Asia/Singapre'
+
 ROOT_DIR_NAME = 'toggl_log'
 INVALID_TIME = Time.new(1960, 1, 1, 0, 0, 0)
 
